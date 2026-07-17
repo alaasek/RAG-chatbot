@@ -1,0 +1,26 @@
+# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/*.pyc
+
+# Databases
+backend/data/chroma/
+backend/data/*.db
+
+# Uploaded documents
+backend/uploads/
+
+# Environment
+backend/.env
+
+# Next.js
+frontend/node_modules/
+frontend/.next/
+
+# Python cache
+**/__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
