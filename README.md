@@ -1,120 +1,222 @@
-# KnowFlow AI — full-stack skeleton
 
-A working RAG (Retrieval-Augmented Generation) application: upload documents,
-they get chunked and embedded into a vector store, and you can ask grounded,
-cited questions about them in a chat UI.
+<div align="center">
 
-This is the **skeleton** milestone: the ingestion pipeline, retrieval,
-generation, chat, document management, and dashboard are all real and wired
-end-to-end. Auth, Postgres/Supabase, streaming tokens, and Docker/CI polish
-are intentionally deferred — see "What's not here yet" below.
+# 🧠 KnowFlow AI
 
-## Stack
+### Persistent Knowledge Assistant
 
-- **Backend**: FastAPI, ChromaDB (persistent, local), sentence-transformers
-  embeddings (HuggingFace, runs locally — no API key needed for retrieval),
-  OpenAI for generation (swappable to Ollama), SQLite for metadata/history.
-- **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, React
-  Query, Framer Motion, react-markdown.
+**Retrieval-Augmented Generation · Semantic Search · Document Intelligence**
 
-## Project structure
+An AI-powered document assistant that retrieves relevant information from uploaded documents and generates contextual answers with source citations.
 
+<br/>
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/Vector_DB-ChromaDB-123C36?style=flat-square)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+
+</div>
+
+---
+
+## Overview
+
+KnowFlow AI is a full-stack document question-answering application built around Retrieval-Augmented Generation (RAG).
+
+Users can upload documents, retrieve semantically relevant passages, and ask questions grounded in their own content. The application combines vector search with language-model generation to produce contextual answers and source references.
+
+The project explores how document retrieval, embedding models, and LLM integration can be combined into a practical AI assistant.
+
+## Features
+
+- **Document ingestion:** upload supported PDF, DOCX, Markdown, and TXT files.
+- **Text processing:** extract document text and split it into overlapping chunks.
+- **Semantic embeddings:** encode document passages using Sentence Transformers.
+- **Vector search:** store and retrieve embeddings with ChromaDB.
+- **Contextual question answering:** generate responses using retrieved document passages.
+- **Source citations:** associate answers with retrieved source references.
+- **Document management:** inspect and delete indexed documents.
+- **Conversation history:** maintain question-and-answer history using SQLite.
+- **Dashboard:** view document, chunk, and query-related information.
+
+## How It Works
+
+```mermaid
+flowchart TD
+    A[Upload Documents] --> B[Text Extraction]
+    B --> C[Chunking]
+    C --> D[Sentence Embeddings]
+    D --> E[(ChromaDB)]
+    F[User Question] --> G[Query Embedding]
+    G --> H[Semantic Retrieval]
+    E --> H
+    H --> I[Retrieved Context]
+    I --> J[LLM Generation]
+    J --> K[Answer with Citations]
 ```
-knowflow-ai/
-├── backend/
-│   ├── app/
-│   │   ├── main.py            # FastAPI app + router registration
-│   │   ├── config.py          # env-driven settings
-│   │   ├── routers/           # HTTP layer (documents, chat, dashboard)
-│   │   ├── services/          # business logic (ingestion, RAG orchestration)
-│   │   ├── rag/                # chunking, vector store, LLM call
-│   │   ├── database/           # SQLite connection + schema
-│   │   ├── models/schemas.py   # Pydantic request/response models
-│   │   └── utils/file_parser.py
-│   ├── data/                  # uploads + chroma db + sqlite (gitignored)
-│   ├── requirements.txt
-│   └── .env.example
-└── frontend/
-    ├── app/                   # dashboard (/), /chat, /documents
-    ├── components/            # Sidebar, ChatWindow, UploadModal, etc.
-    ├── lib/api.ts             # typed axios client for the backend
-    └── types/index.ts
+
+## Architecture
+
+### Backend
+
+- **FastAPI** — HTTP API and application endpoints.
+- **Sentence Transformers** — local text embedding generation.
+- **ChromaDB** — persistent vector storage and similarity search.
+- **SQLite** — conversation history and lightweight application data.
+- **LLM providers** — configurable generation through supported providers.
+
+### Frontend
+
+- **Next.js 15 App Router**
+- **TypeScript**
+- **Tailwind CSS**
+- **React Query**
+- **Framer Motion**
+- **react-markdown**
+
+## Retrieval Pipeline
+
+KnowFlow AI follows a typical RAG workflow:
+
+1. Extract text from an uploaded document.
+2. Split the extracted content into overlapping chunks.
+3. Generate vector embeddings for each chunk.
+4. Persist the embeddings and associated metadata in ChromaDB.
+5. Embed the user's question.
+6. Retrieve relevant chunks through vector similarity search.
+7. Send the retrieved context to the configured language model.
+8. Return the generated answer with source references.
+
+This approach grounds responses in retrieved document content rather than relying exclusively on the language model's internal knowledge.
+
+## Embedding and Storage
+
+The application uses a Sentence Transformers embedding model, with `all-MiniLM-L6-v2` as the legacy/default model configuration.
+
+ChromaDB stores document embeddings and supports similarity-based retrieval. The embedding configuration must remain consistent between indexing and querying.
+
+The LLM provider is configurable, allowing supported local or hosted models to be used for answer generation.
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11
+- Node.js and npm
+- Git
+- A supported LLM provider configured for answer generation
+
+### 1. Clone the repository
+
+```bash
+git clone YOUR_KNOWFLOW_REPOSITORY_URL
+cd YOUR_KNOWFLOW_PROJECT_FOLDER
 ```
 
-## Running it locally
+### 2. Set up the backend
 
-### 1. Backend
+Navigate to the backend directory:
 
 ```bash
 cd backend
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env        # then add your OPENAI_API_KEY
-uvicorn app.main:app --reload --port 8000
+python -m venv .venv
 ```
 
-The first run will download the sentence-transformers embedding model
-(~80MB) — that's expected and only happens once.
+Activate the environment on Windows:
 
-Without an `OPENAI_API_KEY`, retrieval still works end-to-end (upload,
-chunk, embed, search) but the answer text will say generation is stubbed,
-so you can verify the pipeline before spending API credits.
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
 
-### 2. Frontend
+Install the dependencies using the backend dependency file:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start the API using the entry point configured in the project. For example, if the application instance is `app.main:app`:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The API is commonly available at:
+
+`http://127.0.0.1:8000`
+
+FastAPI documentation is available at:
+
+`http://127.0.0.1:8000/docs`
+
+### 3. Set up the frontend
+
+Open another terminal and navigate to the frontend directory:
 
 ```bash
 cd frontend
 npm install
-cp .env.local.example .env.local
 npm run dev
 ```
 
-Visit `http://localhost:3000`.
+Open the local development URL printed by Next.js, commonly:
 
-### 3. Or both via Docker Compose
+`http://localhost:3000`
 
-```bash
-cp backend/.env.example backend/.env   # add your OPENAI_API_KEY
-docker compose up --build
-```
+Adjust the directory names and commands if your repository uses a different structure.
 
-## API surface (matches the spec)
+## Configuration
 
-| Method | Path                       | Purpose                          |
-|--------|----------------------------|-----------------------------------|
-| POST   | `/api/upload`              | Upload + ingest a document        |
-| GET    | `/api/documents`           | List documents                    |
-| DELETE | `/api/documents/{id}`      | Delete a document + its vectors   |
-| POST   | `/api/chat`                | Ask a question, get grounded answer + sources |
-| GET    | `/api/history`             | List conversations                |
-| GET    | `/api/history/{id}`        | Get a conversation with messages  |
-| PATCH  | `/api/history/{id}`        | Rename a conversation             |
-| DELETE | `/api/history/{id}`        | Delete a conversation             |
-| GET    | `/api/dashboard`           | Aggregate stats                   |
+Configure the variables expected by your application before starting it.
 
-## What's not here yet
+Depending on the selected provider, these may include:
 
-These are on the roadmap from the original spec but deliberately out of
-scope for the skeleton, so we could get a real, working pipeline in front
-of you fast:
+- `LLM_PROVIDER`
+- `EMBEDDING_MODEL`
+- `OPENAI_MODEL`
+- Ollama connection and model settings
+- Generation limits and timeout settings
 
-- **Auth** (Clerk/NextAuth) — every request is currently unauthenticated
-  and single-tenant.
-- **Postgres/Supabase** — using SQLite locally; swapping is mostly a matter
-  of changing `database/db.py`'s connection since the SQL is standard.
-- **Streaming responses** — chat currently waits for the full answer.
-  OpenAI's streaming API is a small change in `rag/llm.py` + an SSE
-  endpoint.
-- **Admin dashboard** (multi-user stats) — the current `/dashboard` is
-  single-tenant stats, which is what "Admin Dashboard" reduces to without
-  auth.
-- **Hybrid search, OCR, image extraction, multi-collection** — bonus
-  features from the spec, not yet implemented.
-- **CI/CD, automated tests** — not yet added.
+Use the project's example environment file if one exists. Keep API keys and other secrets out of GitHub.
 
-## Design notes
+## Current Scope and Limitations
 
-Dark ink-navy theme with a teal "flow" accent for primary actions/nav and a
-warm amber accent reserved specifically for source citations, so the
-grounding — the whole point of RAG — is visually distinct from the rest of
-the UI rather than just another gray badge.
+- Scanned PDFs requiring OCR are not supported by the current extraction pipeline.
+- Answer quality depends on document extraction, chunking, retrieval relevance, and the selected LLM.
+- Authentication and multi-user access should not be assumed unless implemented.
+- Production deployment, security controls, and evaluation should be assessed separately from local development functionality.
+
+## Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| API | Python, FastAPI |
+| Embeddings | Sentence Transformers |
+| Vector database | ChromaDB |
+| Language models | Configurable local or hosted providers |
+| Application data | SQLite |
+| Frontend | Next.js, React, TypeScript |
+| UI | Tailwind CSS, Framer Motion |
+| Data retrieval | Semantic vector search |
+
+## Future Improvements
+
+Potential areas for further development include:
+
+- OCR support for scanned documents.
+- Retrieval evaluation using a curated question-answer dataset.
+- Streaming responses.
+- Authentication and multi-user document isolation.
+- Containerization and automated testing.
+- Hybrid retrieval combining vector similarity and keyword search.
+
+These are possible extensions, not claims about currently implemented features.
+
+## Author
+
+**Alaa Sekiou**  
+Master's student in Artificial Intelligence — USTHB
+
+[GitHub Profile](https://github.com/alaasek)
+
